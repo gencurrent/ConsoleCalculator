@@ -4,6 +4,8 @@
 #include <utility>
 #include <algorithm>
 
+//#define DEBUG
+
 using namespace std;
 
 class Calculator{
@@ -37,6 +39,7 @@ public:
             number.append(1, a);
             it++;
         }
+        it--;
         
         return number;
     }
@@ -59,12 +62,12 @@ public:
                     
                     m_outList.push_back(getNumberInString(it));
                 }
-                
+                continue;
             }
             
             if ((it == m_expression.begin()) && (*it == '-')){
                 m_outList.push_back(getNumberInString(it));
-                
+                continue;
             }
             
             
@@ -106,27 +109,42 @@ public:
             }
             
             
-            /*if(*it != ' '){
-                string wrongString = "";
-                while(!((isNumber(*it) || (*it == '*') || (*it == '/') || (*it == '+') || (*it == '-') || (*it == ' ') || (it == m_expression.end()) || (*it != '\0')))){
+            if(*it != ' '){
+                string wrongString;
+                while(!(  
+                            (isNumber(*it)) || 
+                            (*it == '*') || (*it == '/') || 
+                            (*it == '+') || (*it == '-') || 
+                            (*it == ' ') || (*it == '(') || 
+                            (*it == ')') 
+                       ) && 
+                       (it != m_expression.end()) && (*it != '\0')
+                     )  {
                     wrongString += *it;
                     it++;
                 }
-                if(wrongString.size() != 0){
+                cout << "Here\n";
+                if(wrongString.length() != 0){
                     cout << "Wrong input: " << wrongString << endl;
                     terminate();
                 }
-            }*/
+            }
+            
         }
     }
 
-    // Парсинг выражения
     double parseExpression(string &exp){
         this->m_expression = exp;
+        
+        return parseExpression();
+    }
+    
+    // Парсинг выражения
+    double parseExpression(){
         m_outList.clear();   // Список операндов и операторов
+        // Очищаем стек операторов
         while(!m_operStack.empty())
             m_operStack.pop();
-        //m_expression.erase( std::remove_if( m_expression.begin(), m_expression.end(), ::isspace ), m_expression.end() );
         
         double result;
         string::iterator it = m_expression.begin();
@@ -145,11 +163,12 @@ public:
         }
         
         
+#ifdef DEBUG
         cout << "OutPut String dump\n" ;
         for(list<string>::iterator it = m_outList.begin(); it != m_outList.end(); it++)
             cout << *it << ' ';
         cout << "\nEnd of dumping\n";
-        
+#endif
         
         
         double locResult;
