@@ -10,6 +10,7 @@ class Calculator{
     
     string m_expression;
     list<string> m_outList;
+    stack<char> m_operStack;  // Стэк операторов
 public:
     Calculator(){};
     Calculator(string &expression) : m_expression(expression){};
@@ -44,27 +45,18 @@ public:
     double calcExpression(){
         double result;
     }
-
-    // Парсинг выражения
-    double parseExpression(string &exp){
-        this->m_expression = exp;
-        
-        //m_expression.erase( std::remove_if( m_expression.begin(), m_expression.end(), ::isspace ), m_expression.end() );
-        
-        double result;
-        
-        m_outList.clear();   // Список операндов и операторов
-        stack<char> operStack;  // Стэк операторов
-        
-        for(string::iterator it = m_expression.begin(); it != m_expression.end() && *it != '\0'; it++){
+    
+    void parseSubExpression(string::iterator &it){
+        for(; (it != m_expression.end()) && (*it != '\0'); it++){
             
             // Парсинг тех случаев, когда минус становится первым в начале выражения или внутри скобок
             if(*it == '('){
-                operStack.push(*it);
+                m_operStack.push(*it);
                 
-                it++;
                 
-                if (*it == '-'){
+                if (*(it + 1) == '-'){
+                    it++;
+                    
                     m_outList.push_back(getNumberInString(it));
                 }
                 
@@ -81,21 +73,21 @@ public:
             }
             
             if(*it == '+' || *it == '-'){
-                operStack.push(*it);
+                m_operStack.push(*it);
                 continue;
             }
             if(*it == '*' || *it == '/'){
-                if(operStack.size() != 0){
+                if(m_operStack.size() != 0){
                     // Смотрим на предыдущий оператор
-                    char a = operStack.top();
+                    char a = m_operStack.top();
                     // Если тоже оператор умножения или деления, выталкиваем предыдущий и помещаем в выходную строку
                     if(a == '*' || a == '/'){
                         m_outList.push_back(string(1, a));
-                        operStack.pop();
+                        m_operStack.pop();
                     }
                     
                 }
-                operStack.push(*it);
+                m_operStack.push(*it);
                 
                 continue;
             }
@@ -104,17 +96,17 @@ public:
             
             if(*it == ')'){
                 
-                while(operStack.top() != '('){
-                    m_outList.push_back(string(1, operStack.top()));
-                    operStack.pop();
+                while(m_operStack.top() != '('){
+                    m_outList.push_back(string(1, m_operStack.top()));
+                    m_operStack.pop();
                 }
-                operStack.pop();    // Выталкиваем '('
+                m_operStack.pop();    // Выталкиваем '('
                 
                 continue;
             }
             
             
-            if(*it != ' '){
+            /*if(*it != ' '){
                 string wrongString = "";
                 while(!((isNumber(*it) || (*it == '*') || (*it == '/') || (*it == '+') || (*it == '-') || (*it == ' ') || (it == m_expression.end()) || (*it != '\0')))){
                     wrongString += *it;
@@ -124,14 +116,39 @@ public:
                     cout << "Wrong input: " << wrongString << endl;
                     terminate();
                 }
-            }
+            }*/
         }
+    }
+
+    // Парсинг выражения
+    double parseExpression(string &exp){
+        this->m_expression = exp;
+        m_outList.clear();   // Список операндов и операторов
+        while(!m_operStack.empty())
+            m_operStack.pop();
+        //m_expression.erase( std::remove_if( m_expression.begin(), m_expression.end(), ::isspace ), m_expression.end() );
+        
+        double result;
+        string::iterator it = m_expression.begin();
+        
+        parseSubExpression(it);
+        
+        
+        
+        
+        cout << "CP\n";
         
         // Выталкиваем операторы из стека
-        while(!operStack.empty()){
-            m_outList.push_back(string(1, operStack.top()));
-            operStack.pop();
+        while(!m_operStack.empty()){
+            m_outList.push_back(string(1, m_operStack.top()));
+            m_operStack.pop();
         }
+        
+        
+        cout << "OutPut String dump\n" ;
+        for(list<string>::iterator it = m_outList.begin(); it != m_outList.end(); it++)
+            cout << *it << ' ';
+        cout << "\nEnd of dumping\n";
         
         
         
