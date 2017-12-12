@@ -1,4 +1,5 @@
-# ConsoleCalculator
+# ConsoleCalculator - The Reverse Polish Notation Calculator
+I think it's the best version that I've seen (and created) - really. 
 
 An RPN console calculator that takes into account parntheses. 
 
